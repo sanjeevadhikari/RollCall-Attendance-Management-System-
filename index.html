@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>RollCall — Improved Teacher Dashboard</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="max-w-6xl mx-auto px-6 py-8">
+        <header class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white" style="background:linear-gradient(135deg,var(--primary),var(--accent)); font-weight:800; font-size:18px;">📘</div>
+                <div>
+                    <div class="text-xl font-semibold">RollCall</div>
+                    <div class="small-muted">Smart Attendance — Improved Teacher Dashboard</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="userStatus" class="small-muted">Not signed in</div>
+                <button id="btnSignOut" class="btn hidden">Sign out</button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Step 1: Landing -->
+            <section id="step-landing" class="step active">
+                <div class="card p-10 geometric-bg relative overflow-hidden">
+                    <div class="shape-1"></div>
+                    <div class="shape-2"></div>
+                    <div class="shape-3"></div>
+
+                    <div class="landing-hero flex flex-col md:flex-row items-center gap-8">
+                        <div class="flex-1">
+                            <div style="font-size:44px">📘</div>
+                            <h1 class="text-4xl font-bold mt-2 bg-gradient-to-r from-indigo-600 to-pink-500 bg-clip-text text-transparent">Welcome to RollCall</h1>
+                            <p class="text-lg text-gray-600 mt-3 max-w-lg">Quick attendance tracking for teachers, students & parents. Demo accounts are available — or you can create your own.</p>
+                            <div class="mt-6 flex gap-3 flex-wrap">
+                                <button id="gotoLogin" class="btn btn-primary pulse">Get started</button>
+                                <button id="seedQuick" class="btn">Seed demo</button>
+                            </div>
+                        </div>
+                        <div class="md:w-2/5 bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
+                            <h3 class="font-semibold text-lg mb-3">Key Features</h3>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <span class="text-indigo-500 mr-2">•</span>
+                                    <span>Role-based login (Teacher / Student / Parent)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-indigo-500 mr-2">•</span>
+                                    <span>Calendar + trend chart visualization</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-indigo-500 mr-2">•</span>
+                                    <span>CSV import/export & PDF report generation</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-indigo-500 mr-2">•</span>
+                                    <span>LocalStorage demo (editable)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-indigo-500 mr-2">•</span>
+                                    <span>Class-wise attendance tracking</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-indigo-500 mr-2">•</span>
+                                    <span>Switch between graph and list views</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-indigo-500 mr-2">•</span>
+                                    <span>Class-wise student sorting</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="demo-accounts mt-8">
+                        <h3 class="font-semibold mb-3">Demo Accounts</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-indigo-50 p-3 rounded-lg">
+                                <div class="font-medium text-indigo-700">Teacher</div>
+                                <div class="text-sm">Email: <strong>ms@example.com</strong></div>
+                                <div class="text-sm">Password: <strong>teach123</strong></div>
+                            </div>
+                            <div class="bg-pink-50 p-3 rounded-lg">
+                                <div class="font-medium text-pink-700">Student</div>
+                                <div class="text-sm">ID: <strong>A01</strong></div>
+                                <div class="text-sm">Password: <strong>pass123</strong></div>
+                            </div>
+                            <div class="bg-emerald-50 p-3 rounded-lg">
+                                <div class="font-medium text-emerald-700">Parent</div>
+                                <div class="text-sm">Code: <strong>pc_A01</strong></div>
+                                <div class="text-sm">(No password needed)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 2: Login -->
+            <section id="step-login" class="step p-6">
+                <div class="card p-6 login-wrap">
+                    <div class="login-card p-6">
+                        <div class="text-center mb-4">
+                            <div style="font-size:36px">📘</div>
+                            <h2 class="text-2xl font-bold mt-2">Sign in</h2>
+                            <p class="small-muted mt-1">Choose role and enter credentials</p>
+                        </div>
+
+                        <!-- role tabs -->
+                        <div class="flex justify-center gap-2 mb-4">
+                            <button class="role-tab btn" data-role="teacher">Teacher</button>
+                            <button class="role-tab btn" data-role="student">Student</button>
+                            <button class="role-tab btn" data-role="parent">Parent</button>
+                        </div>
+
+                        <!-- login area -->
+                        <div id="loginArea"></div>
+
+                        <div class="mt-4 text-center small-muted">
+                            <span>Need to reset demo? </span>
+                            <button id="resetDemo" class="linkish">Reset Demo</button>
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <button id="backHome" class="btn">Back to Landing</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Teacher Dashboard (improved) -->
+            <section id="step-teacher" class="step p-4">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <aside class="col-span-1">
+                        <div class="card p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="avatar">T</div>
+                                <div>
+                                    <div id="teacherName" class="font-semibold">Teacher</div>
+                                    <div id="teacherEmail" class="small-muted text-sm"></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 grid grid-cols-2 gap-3">
+                                <div class="p-3 bg-white rounded-lg text-center">
+                                    <div class="small-muted">Classes</div>
+                                    <div id="totalClasses">0</div>
+                                </div>
+                                <div class="p-3 bg-white rounded-lg text-center">
+                                    <div class="small-muted">Students</div>
+                                    <div id="totalStudents">0</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <h4 class="font-semibold mb-2">Add Class</h4>
+                                <form id="addClassForm" class="space-y-2">
+                                    <input id="newClassName" class="input w-full" placeholder="e.g. 10A" />
+                                    <div class="flex gap-2">
+                                        <button class="btn btn-accent">Add</button>
+                                        <button type="button" id="seedBtnHeader" class="btn">Seed demo</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="mt-4">
+                                <h4 class="font-semibold mb-2">Add Student</h4>
+                                <form id="addStudentForm" class="space-y-2">
+                                    <input id="newStuName" class="input w-full" placeholder="Full name" />
+                                    <input id="newStuRoll" class="input w-full" placeholder="Roll e.g. A01" />
+                                    <input id="newStuPassword" type="password" class="input w-full" placeholder="Password" />
+                                    <select id="newStuClass" class="input w-full"></select>
+                                    <div class="flex gap-2">
+                                        <button class="btn btn-primary">Add Student</button>
+                                        <button type="button" id="exportStudentsBtn" class="btn">Export CSV</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <main class="col-span-1 lg:col-span-3 space-y-4">
+                        <div class="card p-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-semibold">Take Attendance</h3>
+                                <div class="small-muted">Choose class & date</div>
+                            </div>
+                            <form id="attForm" class="mt-3 space-y-3">
+                                <select id="attClass" class="input w-full"></select>
+                                <input id="attDate" type="date" class="input w-full" />
+                                <div id="attList" class="max-h-48 overflow-auto"></div>
+                                <div class="flex gap-2">
+                                    <button class="btn btn-primary">Save</button>
+                                    <button type="button" id="clearClassAttend" class="btn">Clear</button>
+                                    <button type="button" id="exportClassCSV" class="btn">Export CSV</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-semibold">Students</h4>
+                                <div class="flex items-center gap-2">
+                                    <span class="small-muted">Sort by:</span>
+                                    <select id="sortStudents" class="sort-select">
+                                        <option value="name-asc">Name (A-Z)</option>
+                                        <option value="name-desc">Name (Z-A)</option>
+                                        <option value="roll-asc">Roll (A-Z)</option>
+                                        <option value="roll-desc">Roll (Z-A)</option>
+                                        <option value="attendance-asc">Attendance (Low-High)</option>
+                                        <option value="attendance-desc">Attendance (High-Low)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="class-tabs" id="classTabs"></div>
+                            
+                            <div id="allStudents" class="mt-3"></div>
+                            <div class="mt-3 flex gap-2">
+                                <input id="importCSV" type="file" accept=".csv" class="hidden" />
+                                <button id="importCSVBtn" class="btn">Import CSV</button>
+                                <button id="exportAllBtn" class="btn">Export All CSV</button>
+                            </div>
+                        </div>
+
+                        <div class="card p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-semibold">Class Overview</h4>
+                                <div class="flex items-center gap-3">
+                                    <select id="chartClassSelect" class="input"></select>
+                                    <div class="toggle-container">
+                                        <span class="toggle-label">Graph</span>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="viewToggle">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                        <span class="toggle-label">List</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Graph View -->
+                            <div id="graphView" class="view-container active">
+                                <canvas id="classChart" height="200"></canvas>
+                            </div>
+
+                            <!-- List View -->
+                            <div id="listView" class="view-container">
+                                <div class="mb-3">
+                                    <label class="small-muted">Select Date: </label>
+                                    <input type="date" id="listDate" class="input ml-2" />
+                                </div>
+                                <div id="attendanceList" class="max-h-60 overflow-auto"></div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </section>
+
+            <!-- Student Dashboard -->
+            <section id="step-student" class="step p-4">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <aside class="col-span-1">
+                        <div class="card p-4">
+                            <div class="flex items-center gap-3">
+                                <div id="stuAvatar" class="avatar">S</div>
+                                <div>
+                                    <div id="stuName" class="font-semibold">Student</div>
+                                    <div id="stuMeta" class="small-muted"></div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 grid grid-cols-2 gap-3">
+                                <div class="p-3 bg-white rounded-lg text-center">
+                                    <div class="small-muted">Present</div>
+                                    <div id="stuPresent">0</div>
+                                </div>
+                                <div class="p-3 bg-white rounded-lg text-center">
+                                    <div class="small-muted">Absent</div>
+                                    <div id="stuAbsent">0</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="small-muted">Calendar</div>
+                                    <div class="flex gap-2">
+                                        <button onclick="prevMonth()" class="btn">◀</button>
+                                        <button onclick="nextMonth()" class="btn">▶</button>
+                                    </div>
+                                </div>
+                                <div id="calTitle" class="small-muted mt-2"></div>
+                                <div class="cal-head mt-3 grid grid-cols-7 gap-1"></div>
+                                <div id="calGrid" class="grid grid-cols-7 gap-2 mt-2"></div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <main class="col-span-1 lg:col-span-3 space-y-4">
+                        <div class="card p-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-semibold">Attendance Trend</h3>
+                                <div class="small-muted">Last 6 months</div>
+                            </div>
+                            <div class="mt-3">
+                                <canvas id="stuChart" height="140"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card p-4">
+                            <h4 class="font-semibold">Recent</h4>
+                            <div id="recentList" class="mt-2 small-muted"></div>
+                            <div class="mt-3 flex gap-2">
+                                <button id="exportStudentCSV" class="btn">Export CSV</button>
+                                <button id="exportStudentPDF" class="btn">Export PDF</button>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </section>
+
+            <!-- Parent View -->
+            <section id="step-parent" class="step p-4">
+                <div class="card p-6 max-w-2xl mx-auto">
+                    <div class="parent-header">
+                        <h3 class="font-semibold">Parent Access</h3>
+                        <button id="parentSignOut" class="btn">Sign Out</button>
+                    </div>
+                    <p class="small-muted mt-1">Enter child roll & parent code</p>
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <input id="parentRoll" class="input" placeholder="Child roll e.g. A01" />
+                        <input id="parentCode" class="input" placeholder="Parent code e.g. pc_A01" />
+                        <button id="parentLookup" class="btn btn-primary">Lookup</button>
+                    </div>
+                    <div id="parentResult" class="mt-4"></div>
+                    <div class="mt-4 flex justify-end">
+                        <button id="exportParentPDF" class="btn">Save as PDF</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+
+</body>
+
+</html>
